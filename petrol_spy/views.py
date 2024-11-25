@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db.models import Count
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -16,10 +17,19 @@ class GetLeaderboardView(generics.GenericAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        users = self.queryset.annotate(reports_count=Count('reports')).order_by("-reports_count")[:100]
+        cache_key = "leaderboard_users"
+        users = cache.get(cache_key)
+        if not users:
+            # Annotate with the count of reports and filter out users with 0 reports
+            users = (
+                self.queryset.annotate(reports_count=Count("reports"))
+                .filter(reports_count__gt=0)  # Exclude reports_count = 0
+                .order_by("-reports_count")[:100]
+            )
+            cache.set(cache_key, users, 60 * 3)  # Cache for 3 minutes
+
         return users
 
-    # Cache page for the requested url
     @method_decorator(cache_page(60 * 3))
     def get(self, request, *args, **kwargs):
         paginator = self.pagination_class()
