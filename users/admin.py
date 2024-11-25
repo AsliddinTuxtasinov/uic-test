@@ -1,3 +1,10 @@
 from django.contrib import admin
 
-# Register your models here.
+from petrol_spy.models import Report
+
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+
+    class Meta:
+        list_display = ["id", "user", "price"]
