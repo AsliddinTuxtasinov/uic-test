@@ -11,16 +11,30 @@ class LeaderboardSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "reports_count"]
 
+    # 1-way
+    # def to_representation(self, instance):
+    #     rep = super().to_representation(instance)
+    #
+    #     try:
+    #         display_name = instance.oneid_profile.full_name
+    #     except Exception as e:
+    #         display_name = instance.username
+    #
+    #     rep.update({
+    #         "display_name": display_name
+    #     })
+    #
+    #     return rep
+
+    # 2-way more optimised than 1-way
     def to_representation(self, instance):
         rep = super().to_representation(instance)
 
-        try:
-            display_name = instance.oneid_profile.full_name
-        except Exception as e:
-            display_name = instance.username
+        display_name = (
+            instance.oneid_profile.full_name
+            if hasattr(instance, "oneid_profile")
+            else instance.username
+        )
 
-        rep.update({
-            "display_name": display_name
-        })
-
+        rep["display_name"] = display_name
         return rep
