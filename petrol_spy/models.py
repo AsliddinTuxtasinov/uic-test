@@ -30,7 +30,7 @@ class Fuel(models.Model):
 
 
 class Report(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports", db_index=True)
     fuel = models.ForeignKey(Fuel, on_delete=models.CASCADE)
     is_available = models.BooleanField()
     price = models.IntegerField(null=True, blank=True)
